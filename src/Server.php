@@ -37,9 +37,8 @@ class Server implements Event\EventEmitterInterface {
         $this->on('pong', [$this, 'pong']);
     }
 
-    protected function connect() {
+    protected function connect($client) {
 
-        $client = stream_socket_accept($this->server);
         if($client) {
 
             $this->clientSockets[] = $client;
@@ -87,7 +86,7 @@ class Server implements Event\EventEmitterInterface {
             }
 
             if(in_array($this->server, $this->readSockets)) {
-                $this->emit('connect');
+                $this->emit('connect', [stream_socket_accept($this->server)]);
             }
 
             $this->emit('read');
