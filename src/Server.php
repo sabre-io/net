@@ -34,11 +34,17 @@ class Server implements Event\EventEmitterInterface {
 
     public function getClients() {
 
-        return $this->clients;
+        $return = [];
+        foreach($this->clients as $client) {
+            $return[] = $client->getSocket();
+        }
+        return $return;
 
     }
 
     protected function connect($socket) {
+
+        $socket = new Socket($socket);
 
         $this->clients[] = $socket;
 
@@ -55,14 +61,14 @@ class Server implements Event\EventEmitterInterface {
             $data = fread($socket, 128);
             if(!$data)
             {
-                $this->emit('disconnect', [$socket]);
+                $this->emit('disconnect', [new Socket($socket)]);
 
                 unset($this->clients[array_search($socket, $this->clients)]);
                 fclose($socket);
                 continue;
             }
 
-            $this->emit('data', [$socket, $data]);
+            $this->emit('data', [new Socket($socket), $data]);
         }
 
     }
@@ -70,14 +76,27 @@ class Server implements Event\EventEmitterInterface {
     public function broadcast($data) {
 
         foreach($this->clients as $socket) {
-            $this->send($socket, $data);
+            $socket->send($data);
         }
 
     }
 
-    public function send($socket, $data) {
+    protected function streamSelect() {
 
-        fwrite($socket, $data);
+        $this->readStreams = $this->getClients();
+        $this->readStreams[] = $this->server;
+
+        $exceptStreams = NULL;
+        if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
+        {
+            throw new StreamSelectFailed();
+        }
+
+        if(in_array($this->server, $this->readStreams)) {
+            $this->connect(stream_socket_accept($this->server));
+        }
+
+        $this->processStreams();
 
     }
 
@@ -85,20 +104,7 @@ class Server implements Event\EventEmitterInterface {
 
         while(true)
         {
-            $this->readStreams = $this->clients;
-            $this->readStreams[] = $this->server;
-
-            $exceptStreams = NULL;
-            if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
-            {
-                throw new StreamSelectFailed();
-            }
-
-            if(in_array($this->server, $this->readStreams)) {
-                $this->connect(stream_socket_accept($this->server));
-            }
-
-            $this->processStreams();
+            $this->streamSelect();
         }
 
     }

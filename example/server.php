@@ -29,21 +29,21 @@ use Dominik\TcpServer\Server;
 $server = new \Dominik\TcpServer\Server('tcp://0.0.0.0:6667');
 
 $server->on('connect', function($socket) use ($server) {
-    echo 'Connected: ' . stream_socket_get_name($socket, true) . PHP_EOL;
+    echo 'Connected: ' . $socket->getName() . PHP_EOL;
     echo 'We have ' . count($server->getClients()) . ' connected client(s).' . PHP_EOL;
 });
 
 $server->on('disconnect', function($socket) use ($server) {
-    echo 'Disconnected: ' . stream_socket_get_name($socket, true) . PHP_EOL;
+    echo 'Disconnected: ' . $socket->getName() . PHP_EOL;
     echo 'We have ' . count($server->getClients()) . ' client(s) left.' . PHP_EOL;
 });
 
 $server->on('data', function($socket, $data) use ($server) {
     if(count($server->getClients()) > 1) {
-        $server->send($socket, 'Thank you, ' . stream_socket_get_name($socket, true) . '. Message received and broadcasted.' . PHP_EOL);
-        $server->broadcast(stream_socket_get_name($socket, true) . ' sent: ' . $data);
+        $socket->send('Thank you, ' . $socket->getName() . '. Message received and broadcasted.' . PHP_EOL);
+        $server->broadcast($socket->getName() . ' sent: ' . $data);
     } else {
-        $server->send($socket, 'Message received, but not broadcasted. You are alone! :-(' . PHP_EOL);
+        $socket->send('Message received, but not broadcasted. You are alone! :-(' . PHP_EOL);
     }
 });
 $server->start();
