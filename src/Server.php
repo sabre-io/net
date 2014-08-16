@@ -2,6 +2,8 @@
 
 namespace Dominik\TcpServer;
 
+use Dominik\TcpServer\Exception\CouldNotBindSocket;
+use Dominik\TcpServer\Exception\StreamSelectFailed;
 use Sabre\Event;
 
 
@@ -24,7 +26,7 @@ class Server implements Event\EventEmitterInterface {
 
         $this->server = stream_socket_server($socket, $errno, $errorMessage);
         if(!$this->server) {
-            throw new Exception('Could not bind to socket: ' . $errorMessage);
+            throw new CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }
 
         $this->registerEvents();
@@ -82,7 +84,7 @@ class Server implements Event\EventEmitterInterface {
 
             if(!stream_select($this->readSockets, $this->writeSockets, $this->exceptSockets, $this->socketTimeout))
             {
-                throw new Exception('stream_select failed.');
+                throw new StreamSelectFailed();
             }
 
             if(in_array($this->server, $this->readSockets)) {
