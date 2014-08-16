@@ -32,11 +32,17 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    public function getClients() {
+
+        return $this->clients;
+
+    }
+
     protected function connect($socket) {
 
         $this->clients[] = $socket;
 
-        $this->emit('connect', [$socket, $this->clients]);
+        $this->emit('connect', [$socket]);
 
         unset($this->readStreams[array_search($this->server, $this->readStreams)]);
 
@@ -49,14 +55,14 @@ class Server implements Event\EventEmitterInterface {
             $data = fread($socket, 128);
             if(!$data)
             {
-                $this->emit('disconnect', [$socket, $this->clients]);
+                $this->emit('disconnect', [$socket]);
 
                 unset($this->clients[array_search($socket, $this->clients)]);
                 fclose($socket);
                 continue;
             }
 
-            $this->emit('data', [$socket, $data, $this->clients]);
+            $this->emit('data', [$socket, $data]);
         }
 
     }
