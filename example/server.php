@@ -27,4 +27,4 @@ use Dominik\TcpServer\Server;
  * Run Server
  */
 $server = new \Dominik\TcpServer\Server('tcp://0.0.0.0:6667');
-$server->run();
+$server->start();

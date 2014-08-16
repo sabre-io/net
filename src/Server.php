@@ -2,6 +2,7 @@
 
 namespace Dominik\TcpServer;
 
+use Dominik\TcpServer\Socket;
 use Dominik\TcpServer\Exception\CouldNotBindSocket;
 use Dominik\TcpServer\Exception\StreamSelectFailed;
 use Sabre\Event;
@@ -13,11 +14,11 @@ class Server implements Event\EventEmitterInterface {
 
     protected $server;
 
-    protected $clientSockets = array();
+    protected $clients = [];
 
-    protected $writeSockets = array();
+    protected $readStreams = [];
 
-    protected $exceptSockets = array();
+    protected $writeStreams = [];
 
     protected $socketTimeout = 200000;
 
@@ -35,7 +36,7 @@ class Server implements Event\EventEmitterInterface {
 
     protected function registerEvents() {
         $this->on('connect', [$this, 'connect']);
-        $this->on('read', [$this, 'read']);
+        $this->on('data', [$this, 'data']);
         $this->on('pong', [$this, 'pong']);
     }
 
@@ -43,26 +44,26 @@ class Server implements Event\EventEmitterInterface {
 
         if($client) {
 
-            $this->clientSockets[] = $client;
+            $this->clients[] = $client;
             echo 'Connected: ' . stream_socket_get_name($client, true) . PHP_EOL;
-            echo 'We have ' . count($this->clientSockets) . ' connected client(s).' . PHP_EOL;
+            echo 'We have ' . count($this->clients) . ' connected client(s).' . PHP_EOL;
 
         }
 
-        unset($this->readSockets[array_search($this->server, $this->readSockets)]);
+        unset($this->readStreams[array_search($this->server, $this->readStreams)]);
 
     }
 
-    protected function read() {
+    protected function data() {
 
-        foreach($this->readSockets as $socket) {
+        foreach($this->readStreams as $socket) {
 
             $data = fread($socket, 128);
             if(!$data)
             {
-                unset($this->clientSockets[array_search($socket, $this->clientSockets)]);
+                unset($this->clients[array_search($socket, $this->clients)]);
                 fclose($socket);
-                echo 'Client disconnected. ' . count($this->clientSockets) . ' connected client(s) left.' . PHP_EOL;
+                echo 'Client disconnected. ' . count($this->clients) . ' connected client(s) left.' . PHP_EOL;
                 continue;
             }
 
@@ -72,38 +73,44 @@ class Server implements Event\EventEmitterInterface {
     }
 
     protected function pong($socket, $data) {
+
         $this->send($socket, 'PONG: ' . $data);
         $this->broadcast($data);
+
     }
 
     public function broadcast($data) {
-        foreach($this->clientSockets as $socket) {
+
+        foreach($this->clients as $socket) {
             $this->send($socket, $data);
         }
+
     }
 
     public function send($socket, $data) {
+
         fwrite($socket, $data);
+
     }
 
     public function start() {
 
         while(true)
         {
-            $this->readSockets = $this->clientSockets;
-            $this->readSockets[] = $this->server;
+            $this->readStreams = $this->clients;
+            $this->readStreams[] = $this->server;
 
-            if(!stream_select($this->readSockets, $this->writeSockets, $this->exceptSockets, $this->socketTimeout))
+            $exceptStreams = NULL;
+            if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
             {
                 throw new StreamSelectFailed();
             }
 
-            if(in_array($this->server, $this->readSockets)) {
+            if(in_array($this->server, $this->readStreams)) {
                 $this->emit('connect', [stream_socket_accept($this->server)]);
             }
 
-            $this->emit('read');
-
+            $this->emit('data');
         }
 
     }
