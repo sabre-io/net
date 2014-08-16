@@ -30,52 +30,34 @@ class Server implements Event\EventEmitterInterface {
             throw new CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }
 
-        $this->registerEvents();
-
     }
 
-    protected function registerEvents() {
-        $this->on('connect', [$this, 'connect']);
-        $this->on('data', [$this, 'data']);
-        $this->on('pong', [$this, 'pong']);
-    }
+    protected function connect($socket) {
 
-    protected function connect($client) {
+        $this->clients[] = $socket;
 
-        if($client) {
-
-            $this->clients[] = $client;
-            echo 'Connected: ' . stream_socket_get_name($client, true) . PHP_EOL;
-            echo 'We have ' . count($this->clients) . ' connected client(s).' . PHP_EOL;
-
-        }
+        $this->emit('connect', [$socket, $this->clients]);
 
         unset($this->readStreams[array_search($this->server, $this->readStreams)]);
 
     }
 
-    protected function data() {
+    protected function processStreams() {
 
         foreach($this->readStreams as $socket) {
 
             $data = fread($socket, 128);
             if(!$data)
             {
+                $this->emit('disconnect', [$socket, $this->clients]);
+
                 unset($this->clients[array_search($socket, $this->clients)]);
                 fclose($socket);
-                echo 'Client disconnected. ' . count($this->clients) . ' connected client(s) left.' . PHP_EOL;
                 continue;
             }
 
-            $this->emit('pong', [$socket, $data]);
+            $this->emit('data', [$socket, $data, $this->clients]);
         }
-
-    }
-
-    protected function pong($socket, $data) {
-
-        $this->send($socket, 'PONG: ' . $data);
-        $this->broadcast($data);
 
     }
 
@@ -107,10 +89,10 @@ class Server implements Event\EventEmitterInterface {
             }
 
             if(in_array($this->server, $this->readStreams)) {
-                $this->emit('connect', [stream_socket_accept($this->server)]);
+                $this->connect(stream_socket_accept($this->server));
             }
 
-            $this->emit('data');
+            $this->processStreams();
         }
 
     }
