@@ -38,13 +38,12 @@ $server->on('disconnect', function($socket, $clients) {
     echo 'We have ' . count($clients) . ' client(s) left.' . PHP_EOL;
 });
 
-$server->on('data', function($socket, $data, $clients) {
-    if(count($clients) > 0) {
-        $this->send('Thank you, ' . stream_socket_get_name($socket, true) . '. Message received and broadcasted.');
-        $this->broadcast(stream_socket_get_name($socket, true) . 'sent: ' . $data);
+$server->on('data', function($socket, $data, $clients) use ($server) {
+    if(count($clients) > 1) {
+        $server->send($socket, 'Thank you, ' . stream_socket_get_name($socket, true) . '. Message received and broadcasted.' . PHP_EOL);
+        $server->broadcast(stream_socket_get_name($socket, true) . ' sent: ' . $data);
     } else {
-        $this->send('Message received, but not broadcasted. You are alone! :-(');
+        $server->send($socket, 'Message received, but not broadcasted. You are alone! :-(' . PHP_EOL);
     }
 });
-
 $server->start();
