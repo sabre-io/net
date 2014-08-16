@@ -72,10 +72,21 @@ class Server implements Event\EventEmitterInterface {
     }
 
     protected function pong($socket, $data) {
-        fwrite($socket, 'PONG: ' . $data);
+        $this->send($socket, 'PONG: ' . $data);
+        $this->broadcast($data);
     }
 
-    public function run() {
+    public function broadcast($data) {
+        foreach($this->clientSockets as $socket) {
+            $this->send($socket, $data);
+        }
+    }
+
+    public function send($socket, $data) {
+        fwrite($socket, $data);
+    }
+
+    public function start() {
 
         while(true)
         {
