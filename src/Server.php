@@ -102,7 +102,6 @@ class Server implements Event\EventEmitterInterface {
                 $this->removeClient($socket);
                 $socket->disconnect();
 
-                continue;
             }
 
         }
