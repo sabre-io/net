@@ -23,10 +23,14 @@ foreach ($paths as $path) {
  */
 use Sabre\Net\Server;
 
+$address = 'tcp://0.0.0.0:6667';
+
 /*
  * Run Server
  */
-$server = new Server('tcp://0.0.0.0:6667');
+$server = new Server($address);
+
+echo "Starting server at $address\n";
 
 $server->on('connect', function($socket) use ($server) {
     echo 'Connected: ' . $socket->getName() . PHP_EOL;
