@@ -77,7 +77,7 @@ class Server implements Event\EventEmitterInterface {
         $id = $socket->getId();
 
         if(!isset($this->clients[$id])) {
-            throw new \LogicException('Client does not exists.');
+            throw new \LogicException('Client does not exist.');
         }
 
         unset($this->clients[$id]);
