@@ -1,2 +1,9 @@
-/vendor/
+#composer
+vendor
 composer.lock
+
+#vim lock files
+.*.swp
+
+#development stuff
+tests/cov
