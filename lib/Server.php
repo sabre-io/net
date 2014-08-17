@@ -121,7 +121,7 @@ class Server implements Event\EventEmitterInterface {
         $this->readStreams = $this->getClientStreams();
         $this->readStreams[] = $this->server;
 
-        $exceptStreams = NULL;
+        $exceptStreams = null;
         if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
         {
             throw new StreamSelectFailed();
