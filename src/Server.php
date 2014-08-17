@@ -1,10 +1,10 @@
 <?php
 
-namespace Dominik\TcpServer;
+namespace Sabre\Net;
 
-use Dominik\TcpServer\Socket;
-use Dominik\TcpServer\Exception\CouldNotBindSocket;
-use Dominik\TcpServer\Exception\StreamSelectFailed;
+use Sabre\Net\Socket;
+use Sabre\Net\Exception\CouldNotBindSocket;
+use Sabre\Net\Exception\StreamSelectFailed;
 use Sabre\Event;
 
 

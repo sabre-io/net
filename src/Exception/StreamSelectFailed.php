@@ -1,8 +1,8 @@
 <?php
 
-namespace Dominik\TcpServer\Exeption;
+namespace Sabre\Net\Exeption;
 
 
-class StreamSelectFailed extends \Dominik\TcpServer\Exception {
+class StreamSelectFailed extends \Sabre\Net\Exception {
 
 }

@@ -21,12 +21,12 @@ foreach ($paths as $path) {
 /*
  * Import namespaces
  */
-use Dominik\TcpServer\Server;
+use Sabre\Net\Server;
 
 /*
  * Run Server
  */
-$server = new \Dominik\TcpServer\Server('tcp://0.0.0.0:6667');
+$server = new Server('tcp://0.0.0.0:6667');
 
 $server->on('connect', function($socket) use ($server) {
     echo 'Connected: ' . $socket->getName() . PHP_EOL;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Dominik\TcpServer;
+namespace Sabre\Net;
 
 
 class Exception extends \Exception {

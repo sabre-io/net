@@ -1,17 +1,17 @@
 {
-    "name": "dominik/tcpserver",
+    "name": "sabre/net",
     "require": {
         "sabre/event": "dev-eventloop"
     },
     "authors": [
         {
             "name": "Dominik Tobschall",
-            "email": "dtobschall@gmail.com"
+            "email": "dominik@fruux.com"
         }
     ],
     "autoload" : {
         "psr-4" : {
-            "Dominik\\TcpServer\\" : "src/"
+            "Sabre\\Net\\" : "src/"
         }
     },
     "minimum-stability": "dev"

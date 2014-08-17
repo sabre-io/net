@@ -1,8 +1,8 @@
 <?php
 
-namespace Dominik\TcpServer\Exeption;
+namespace Sabre\Net\Exeption;
 
 
-class CouldNotBindSocket extends \Dominik\TcpServer\Exception {
+class CouldNotBindSocket extends \Sabre\Net\Exception {
 
 }

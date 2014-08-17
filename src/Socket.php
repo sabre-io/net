@@ -1,8 +1,8 @@
 <?php
 
-namespace Dominik\TcpServer;
+namespace Sabre\Net;
 
-use Dominik\TcpServer\Socket;
+use Sabre\Net\Socket;
 use Sabre\Event;
 
 
