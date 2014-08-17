@@ -63,15 +63,23 @@ class Server implements Event\EventEmitterInterface {
     protected function addClient(Socket $socket) {
 
         $id = $socket->getId();
-        if(!isset($this->clients[$id])) {
-            $this->clients[$id] = $socket;
+
+        if(isset($this->clients[$id])) {
+            throw new \LogicException('Client already exists.');
         }
+
+        $this->clients[$id] = $socket;
 
     }
 
     protected function removeClient(Socket $socket) {
 
         $id = $socket->getId();
+
+        if(!isset($this->clients[$id])) {
+            throw new \LogicException('Client does not exists.');
+        }
+
         unset($this->clients[$id]);
 
     }
