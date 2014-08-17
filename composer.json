@@ -1,7 +1,16 @@
 {
     "name": "sabre/net",
+    "description": "sabre/net is an experimental library for creating tcp servers",
+    "keywords": [
+        "Net",
+        "Server",
+        "Socket"
+    ],
+    "homepage": "https://github.com/DominikTo/sabre-event",
+    "license": "BSD-3-Clause",
     "require": {
-        "sabre/event": "dev-eventloop"
+        "php": ">=5.4.1",
+        "sabre/event": "~2.0.0"
     },
     "authors": [
         {
@@ -14,5 +23,7 @@
             "Sabre\\Net\\" : "src/"
         }
     },
-    "minimum-stability": "dev"
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*"
+    }
 }
