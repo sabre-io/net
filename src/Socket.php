@@ -44,9 +44,9 @@ class Socket implements Event\EventEmitterInterface {
 
     }
 
-    public function read($length = 128) {
+    public function read() {
 
-        $data = fread($this->stream, $length);
+        $data = fgets($this->stream);
 
         if($data) {
             $this->emit('data', [$this, $data]);
