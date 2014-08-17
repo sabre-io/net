@@ -23,9 +23,9 @@ class Server implements Event\EventEmitterInterface {
     protected $socketTimeout = 200000;
 
 
-    public function __construct($socket) {
+    public function __construct($localSocket) {
 
-        $this->server = stream_socket_server($socket, $errno, $errorMessage);
+        $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
         if(!$this->server) {
             throw new CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }
@@ -34,19 +34,25 @@ class Server implements Event\EventEmitterInterface {
 
     public function getClients() {
 
-        $return = [];
-        foreach($this->clients as $client) {
-            $return[] = $client->getSocket();
-        }
-        return $return;
+        return $this->clients;
 
     }
 
-    protected function connect($socket) {
+    protected function getClientStreams() {
 
-        $socket = new Socket($socket);
+        $clientStreams = [];
+        foreach($this->getClients() as $client) {
+            $clientStreams[] = $client->getStream();
+        }
+        return $clientStreams;
 
-        $this->clients[] = $socket;
+    }
+
+    protected function connect($stream) {
+
+        $socket = new Socket($stream);
+
+        $this->addClient($socket);
 
         $this->emit('connect', [$socket]);
 
@@ -54,21 +60,43 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    protected function addClient(Socket $socket) {
+
+        $id = $socket->getId();
+        if(!isset($this->clients[$id])) {
+            $this->clients[$id] = $socket;
+        }
+
+    }
+
+    protected function removeClient(Socket $socket) {
+
+        $id = $socket->getId();
+        unset($this->clients[$id]);
+
+    }
+
+    protected function getSocketForStream($stream) {
+
+        $id = (int) $stream;
+        return $this->clients[$id];
+
+    }
+
     protected function processStreams() {
 
-        foreach($this->readStreams as $socket) {
+        foreach($this->readStreams as $stream) {
 
-            $data = fread($socket, 128);
-            if(!$data)
+            $socket = $this->getSocketForStream($stream);
+
+            if(!$socket->read())
             {
-                $this->emit('disconnect', [new Socket($socket)]);
+                $this->removeClient($socket);
+                $socket->disconnect();
 
-                unset($this->clients[array_search($socket, $this->clients)]);
-                fclose($socket);
                 continue;
             }
 
-            $this->emit('data', [new Socket($socket), $data]);
         }
 
     }
@@ -83,7 +111,7 @@ class Server implements Event\EventEmitterInterface {
 
     protected function streamSelect() {
 
-        $this->readStreams = $this->getClients();
+        $this->readStreams = $this->getClientStreams();
         $this->readStreams[] = $this->server;
 
         $exceptStreams = NULL;

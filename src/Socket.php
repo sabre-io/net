@@ -10,30 +10,62 @@ class Socket implements Event\EventEmitterInterface {
 
     use Event\EventEmitterTrait;
 
-    protected $socket;
+    protected $id;
+
+    protected $name;
+
+    protected $stream;
 
 
-    public function __construct($socket) {
+    public function __construct($stream) {
 
-        $this->socket = $socket;
+        $this->id = (int) $stream;
+        $this->name = stream_socket_get_name($stream, true);
+        $this->stream = $stream;
+
+
+    }
+
+    public function getId() {
+
+        return $this->id;
 
     }
 
     public function getName() {
 
-        return stream_socket_get_name($this->socket, true);
+        return $this->name;
 
     }
 
-    public function getSocket() {
+    public function getStream() {
 
-        return $this->socket;
+        return $this->stream;
+
+    }
+
+    public function read($length = 128) {
+
+        $data = fread($this->stream, $length);
+
+        if($data) {
+            $this->emit('data', [$this, $data]);
+        }
+
+        return $data;
 
     }
 
     public function send($data) {
 
-        fwrite($this->socket, $data);
+        fwrite($this->stream, $data);
+
+    }
+
+    public function disconnect() {
+
+        $this->emit('disconnect', [$this]);
+        fclose($this->stream);
 
     }
 
