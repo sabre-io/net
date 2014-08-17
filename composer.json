@@ -20,7 +20,7 @@
     ],
     "autoload" : {
         "psr-4" : {
-            "Sabre\\Net\\" : "src/"
+            "Sabre\\Net\\" : "lib/"
         }
     },
     "require-dev": {
