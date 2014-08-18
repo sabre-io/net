@@ -17,14 +17,14 @@ class Socket implements Event\EventEmitterInterface {
     use Event\EventEmitterTrait;
 
     /**
-     * Ressouce id.
+     * Resource id.
      *
      * @var int
      */
     protected $id;
 
     /**
-     * Ressource name.
+     * Resource name.
      *
      * @var string
      */
@@ -33,14 +33,14 @@ class Socket implements Event\EventEmitterInterface {
     /**
      * The actual stream
      *
-     * @var ressource
+     * @var resource
      */
     protected $stream;
 
     /**
      * Creates a new Socket object.
      *
-     * @param ressource $stream
+     * @param resource $stream
      * @return void
      */
     public function __construct($stream) {
@@ -52,7 +52,7 @@ class Socket implements Event\EventEmitterInterface {
     }
 
     /**
-     * Returns the ressource id.
+     * Returns the resource id.
      *
      * @return int
      */
@@ -63,7 +63,7 @@ class Socket implements Event\EventEmitterInterface {
     }
 
     /**
-     * Returns the ressource name.
+     * Returns the resource name.
      *
      * @return string
      */
@@ -76,7 +76,7 @@ class Socket implements Event\EventEmitterInterface {
     /**
      * Returns the stream.
      *
-     * @return ressource
+     * @return resource
      */
     public function getStream() {
 

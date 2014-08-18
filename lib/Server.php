@@ -21,7 +21,7 @@ class Server implements Event\EventEmitterInterface {
     /**
      * Stream socket server.
      *
-     * @var ressource
+     * @var resource
      */
     protected $server;
 
@@ -35,14 +35,14 @@ class Server implements Event\EventEmitterInterface {
     /**
      * Stream socket read streams.
      *
-     * @var ressource[]
+     * @var resource[]
      */
     protected $readStreams = [];
 
     /**
      * Stream socket write streams.
      *
-     * @var ressource[]
+     * @var resource[]
      */
     protected $writeStreams = [];
 
@@ -97,7 +97,7 @@ class Server implements Event\EventEmitterInterface {
     /**
      * This method handles incoming connections of new clients.
      *
-     * @param  ressource $stream
+     * @param  resource $stream
      * @return void
      */
     protected function connect($stream) {
@@ -151,7 +151,7 @@ class Server implements Event\EventEmitterInterface {
     /**
      * Returns the respective socket from the clients array for a given stream.
      *
-     * @param ressource $stream
+     * @param resource $stream
      * @return Socket
      */
     protected function getSocketForStream($stream) {
