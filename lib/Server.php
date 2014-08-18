@@ -7,22 +7,56 @@ use Sabre\Net\Exception\CouldNotBindSocket;
 use Sabre\Net\Exception\StreamSelectFailed;
 use Sabre\Event;
 
-
+/**
+ * Main TCP server class.
+ *
+ * @copyright Copyright (C) 2009-2014 fruux GmbH (https://fruux.com/).
+ * @author Dominik Tobschall (http://tobschall.de/)
+ * @license http://sabre.io/license Modified BSD License
+ */
 class Server implements Event\EventEmitterInterface {
 
     use Event\EventEmitterTrait;
 
+    /**
+     * Stream socket server.
+     */
     protected $server;
 
+    /**
+     * Array of connected Sabre/Net/Socket's.
+     *
+     * @var array
+     */
     protected $clients = [];
 
+    /**
+     * Stream socket read streams.
+     *
+     * @var array
+     */
     protected $readStreams = [];
 
+    /**
+     * Stream socket write streams.
+     *
+     * @var array
+     */
     protected $writeStreams = [];
 
+    /**
+     * Stream socket timeout.
+     *
+     * @var array
+     */
     protected $socketTimeout = 200000;
 
-
+    /**
+     * Creates a new server.
+     *
+     * @param string $localSocket
+     * @return void
+     */
     public function __construct($localSocket) {
 
         $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
@@ -32,12 +66,22 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * Returns an array of connected clients.
+     *
+     * @return array
+     */
     public function getClients() {
 
         return $this->clients;
 
     }
 
+    /**
+     * Returns an array of streams of the connected clients.
+     *
+     * @return array
+     */
     protected function getClientStreams() {
 
         $clientStreams = [];
@@ -48,6 +92,12 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * This method handles incoming connections of new clients.
+     *
+     * @param  ressource $stream
+     * @return void
+     */
     protected function connect($stream) {
 
         $socket = new Socket($stream);
@@ -60,6 +110,12 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * This method adds new clients to the clients array.
+     *
+     * @param Socket $socket
+     * @return void
+     */
     protected function addClient(Socket $socket) {
 
         $id = $socket->getId();
@@ -72,6 +128,12 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * This method removes clients from the clients array.
+     *
+     * @param Socket $socket
+     * @return void
+     */
     protected function removeClient(Socket $socket) {
 
         $id = $socket->getId();
@@ -84,6 +146,12 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * Returns the respective socket from the clients array for a given stream.
+     *
+     * @param ressource $stream
+     * @return Socket
+     */
     protected function getSocketForStream($stream) {
 
         $id = (int) $stream;
@@ -91,6 +159,11 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * This method takes care of processing updates in the readStreams array.
+     *
+     * @return void
+     */
     protected function processStreams() {
 
         foreach($this->readStreams as $stream) {
@@ -108,6 +181,12 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * Sends data to all currently connected clients.
+     *
+     * @param  string $data
+     * @return void
+     */
     public function broadcast($data) {
 
         foreach($this->clients as $socket) {
@@ -116,6 +195,11 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * stream_select wrapper.
+     *
+     * @return void
+     */
     protected function streamSelect() {
 
         $this->readStreams = $this->getClientStreams();
@@ -135,6 +219,11 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
+    /**
+     * Starts the server.
+     *
+     * @return void
+     */
     public function start() {
 
         while(true)

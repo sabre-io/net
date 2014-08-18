@@ -23,6 +23,9 @@ foreach ($paths as $path) {
  */
 use Sabre\Net\Server;
 
+/*
+ * Listen address
+ */
 $address = 'tcp://0.0.0.0:6667';
 
 /*
