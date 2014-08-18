@@ -41,7 +41,6 @@ class Socket implements Event\EventEmitterInterface {
      * Creates a new Socket object.
      *
      * @param resource $stream
-     * @return void
      */
     public function __construct($stream) {
 
@@ -104,7 +103,7 @@ class Socket implements Event\EventEmitterInterface {
     /**
      * Sends data to the stream.
      *
-     * @param  string $data
+     * @param string $data
      * @return void
      */
     public function send($data) {

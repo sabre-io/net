@@ -57,7 +57,6 @@ class Server implements Event\EventEmitterInterface {
      * Creates a new server.
      *
      * @param string $localSocket
-     * @return void
      */
     public function __construct($localSocket) {
 
@@ -97,7 +96,7 @@ class Server implements Event\EventEmitterInterface {
     /**
      * This method handles incoming connections of new clients.
      *
-     * @param  resource $stream
+     * @param resource $stream
      * @return void
      */
     protected function connect($stream) {
