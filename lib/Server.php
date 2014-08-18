@@ -10,9 +10,9 @@ use Sabre\Event;
 /**
  * Main TCP server class.
  *
- * @copyright Copyright (C) 2009-2014 fruux GmbH (https://fruux.com/).
+ * @copyright Copyright (C) 2014 fruux GmbH (https://fruux.com/).
  * @author Dominik Tobschall (http://tobschall.de/)
- * @license http://sabre.io/license Modified BSD License
+ * @license http://sabre.io/license/ Modified BSD License
  */
 class Server implements Event\EventEmitterInterface {
 
@@ -20,34 +20,36 @@ class Server implements Event\EventEmitterInterface {
 
     /**
      * Stream socket server.
+     *
+     * @var ressource
      */
     protected $server;
 
     /**
      * Array of connected Sabre/Net/Socket's.
      *
-     * @var array
+     * @var Socket[]
      */
     protected $clients = [];
 
     /**
      * Stream socket read streams.
      *
-     * @var array
+     * @var ressource[]
      */
     protected $readStreams = [];
 
     /**
      * Stream socket write streams.
      *
-     * @var array
+     * @var ressource[]
      */
     protected $writeStreams = [];
 
     /**
      * Stream socket timeout.
      *
-     * @var array
+     * @var int
      */
     protected $socketTimeout = 200000;
 
