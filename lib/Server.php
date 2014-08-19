@@ -92,13 +92,6 @@ class Server implements Event\EventEmitterInterface {
     protected $readStreams = [];
 
     /**
-     * Stream socket write streams.
-     *
-     * @var resource[]
-     */
-    protected $writeStreams = [];
-
-    /**
      * Stream socket timeout.
      *
      * @var int
@@ -220,8 +213,10 @@ class Server implements Event\EventEmitterInterface {
         $this->readStreams = $this->getClientStreams();
         $this->readStreams[] = $this->server;
 
+        $writeStreams = null;
         $exceptStreams = null;
-        if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
+
+        if(!stream_select($this->readStreams, $writeStreams, $exceptStreams, $this->socketTimeout))
         {
             throw new StreamSelectFailed();
         }
