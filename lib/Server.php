@@ -2,9 +2,6 @@
 
 namespace Sabre\Net;
 
-use Sabre\Net\Socket;
-use Sabre\Net\Exception\CouldNotBindSocket;
-use Sabre\Net\Exception\StreamSelectFailed;
 use Sabre\Event;
 
 /**
