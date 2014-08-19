@@ -85,13 +85,6 @@ class Server implements Event\EventEmitterInterface {
     protected $clients = [];
 
     /**
-     * Stream socket read streams.
-     *
-     * @var resource[]
-     */
-    protected $readStreams = [];
-
-    /**
      * Returns an array of streams of the connected clients.
      *
      * @return array
@@ -119,8 +112,6 @@ class Server implements Event\EventEmitterInterface {
         $this->addClient($socket);
 
         $this->emit('connect', [$socket]);
-
-        unset($this->readStreams[array_search($this->server, $this->readStreams)]);
 
     }
 
@@ -174,13 +165,21 @@ class Server implements Event\EventEmitterInterface {
     }
 
     /**
-     * This method takes care of processing updates in the readStreams array.
+     * This method processes any readable streams that have pending data.
      *
+     * @param resource[] $streams
      * @return void
      */
-    protected function processStreams() {
+    protected function processPendingReadStreams($streams) {
 
-        foreach($this->readStreams as $stream) {
+        foreach($streams as $stream) {
+
+            if ($stream === $this->server) {
+                // If the server stream is in this list, a new client
+                // connected.
+                $this->connect(stream_socket_accept($this->server));
+                continue;
+            }
 
             $socket = $this->getSocketForStream($stream);
 
@@ -196,14 +195,15 @@ class Server implements Event\EventEmitterInterface {
     }
 
     /**
-     * stream_select wrapper.
+     * This method goes over all our open streams, and calls the relevant
+     * methods to process any changes.
      *
      * @return void
      */
     protected function streamSelect() {
 
-        $this->readStreams = $this->getClientStreams();
-        $this->readStreams[] = $this->server;
+        $readStreams = $this->getClientStreams();
+        $readStreams[] = $this->server;
 
         $writeStreams = null;
         $exceptStreams = null;
@@ -211,15 +211,11 @@ class Server implements Event\EventEmitterInterface {
         // We wait 10 seconds for something to happen, and then we return.
         $socketTimeout = 10;
 
-        if(!stream_select($this->readStreams, $writeStreams, $exceptStreams, $socketTimeout)) {
+        if(!stream_select($readStreams, $writeStreams, $exceptStreams, $socketTimeout)) {
             return;
         }
 
-        if(in_array($this->server, $this->readStreams)) {
-            $this->connect(stream_socket_accept($this->server));
-        }
-
-        $this->processStreams();
+        $this->processPendingReadStreams($readStreams);
 
     }
 
