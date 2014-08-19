@@ -62,8 +62,37 @@ class Server implements Event\EventEmitterInterface {
     function start() {
 
         while(true) {
-            $this->streamSelect();
+            // Waiting 10 seconds for something to happen.
+            $this->tick(10);
         }
+
+    }
+
+    /**
+     * Executes a single server tick.
+     *
+     * A tick is when the server waits for data coming from sockets and new
+     * connections, and does all its processing.
+     *
+     * If there is nothing going on, the server can wait for x seconds for
+     * something to happen, using the $timeOut argument. Set that argument to 0
+     * to not wait.
+     *
+     * @return void
+     */
+    function tick($timeOut = 0) {
+
+        $readStreams = $this->getClientStreams();
+        $readStreams[] = $this->serverResource;
+
+        $writeStreams = null;
+        $exceptStreams = null;
+
+        if(!stream_select($readStreams, $writeStreams, $exceptStreams, $timeOut)) {
+            return;
+        }
+
+        $this->processPendingReadStreams($readStreams);
 
     }
 
@@ -190,31 +219,5 @@ class Server implements Event\EventEmitterInterface {
         }
 
     }
-
-    /**
-     * This method goes over all our open streams, and calls the relevant
-     * methods to process any changes.
-     *
-     * @return void
-     */
-    protected function streamSelect() {
-
-        $readStreams = $this->getClientStreams();
-        $readStreams[] = $this->serverResource;
-
-        $writeStreams = null;
-        $exceptStreams = null;
-
-        // We wait 10 seconds for something to happen, and then we return.
-        $socketTimeout = 10;
-
-        if(!stream_select($readStreams, $writeStreams, $exceptStreams, $socketTimeout)) {
-            return;
-        }
-
-        $this->processPendingReadStreams($readStreams);
-
-    }
-
 
 }
