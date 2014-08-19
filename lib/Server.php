@@ -212,7 +212,7 @@ class Server implements Event\EventEmitterInterface {
         $socketTimeout = 10;
 
         if(!stream_select($this->readStreams, $writeStreams, $exceptStreams, $socketTimeout)) {
-            throw new StreamSelectFailed();
+            return;
         }
 
         if(in_array($this->server, $this->readStreams)) {
