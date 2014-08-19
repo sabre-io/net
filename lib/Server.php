@@ -19,6 +19,58 @@ class Server implements Event\EventEmitterInterface {
     use Event\EventEmitterTrait;
 
     /**
+     * Creates a new server.
+     *
+     * @param string $localSocket
+     */
+    function __construct($localSocket) {
+
+        $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
+        if(!$this->server) {
+            throw new Exception\CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
+        }
+
+    }
+
+    /**
+     * Returns an array of connected clients.
+     *
+     * @return array
+     */
+    function getClients() {
+
+        return $this->clients;
+
+    }
+
+    /**
+     * Sends data to all currently connected clients.
+     *
+     * @param string $data
+     * @return void
+     */
+    function broadcast($data) {
+
+        foreach($this->clients as $socket) {
+            $socket->send($data);
+        }
+
+    }
+
+    /**
+     * Starts the server.
+     *
+     * @return void
+     */
+    function start() {
+
+        while(true) {
+            $this->streamSelect();
+        }
+
+    }
+
+    /**
      * Stream socket server.
      *
      * @var resource
@@ -53,30 +105,6 @@ class Server implements Event\EventEmitterInterface {
      */
     protected $socketTimeout = 200000;
 
-    /**
-     * Creates a new server.
-     *
-     * @param string $localSocket
-     */
-    public function __construct($localSocket) {
-
-        $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
-        if(!$this->server) {
-            throw new CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
-        }
-
-    }
-
-    /**
-     * Returns an array of connected clients.
-     *
-     * @return array
-     */
-    public function getClients() {
-
-        return $this->clients;
-
-    }
 
     /**
      * Returns an array of streams of the connected clients.
@@ -155,7 +183,7 @@ class Server implements Event\EventEmitterInterface {
      */
     protected function getSocketForStream($stream) {
 
-        $id = (int) $stream;
+        $id = (int)$stream;
         return $this->clients[$id];
 
     }
@@ -178,20 +206,6 @@ class Server implements Event\EventEmitterInterface {
 
             }
 
-        }
-
-    }
-
-    /**
-     * Sends data to all currently connected clients.
-     *
-     * @param  string $data
-     * @return void
-     */
-    public function broadcast($data) {
-
-        foreach($this->clients as $socket) {
-            $socket->send($data);
         }
 
     }
@@ -220,18 +234,5 @@ class Server implements Event\EventEmitterInterface {
 
     }
 
-    /**
-     * Starts the server.
-     *
-     * @return void
-     */
-    public function start() {
-
-        while(true)
-        {
-            $this->streamSelect();
-        }
-
-    }
 
 }
