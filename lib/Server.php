@@ -92,14 +92,6 @@ class Server implements Event\EventEmitterInterface {
     protected $readStreams = [];
 
     /**
-     * Stream socket timeout.
-     *
-     * @var int
-     */
-    protected $socketTimeout = 200000;
-
-
-    /**
      * Returns an array of streams of the connected clients.
      *
      * @return array
@@ -216,8 +208,10 @@ class Server implements Event\EventEmitterInterface {
         $writeStreams = null;
         $exceptStreams = null;
 
-        if(!stream_select($this->readStreams, $writeStreams, $exceptStreams, $this->socketTimeout))
-        {
+        // We wait 10 seconds for something to happen, and then we return.
+        $socketTimeout = 10;
+
+        if(!stream_select($this->readStreams, $writeStreams, $exceptStreams, $socketTimeout)) {
             throw new StreamSelectFailed();
         }
 
