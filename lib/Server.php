@@ -25,8 +25,8 @@ class Server implements Event\EventEmitterInterface {
      */
     function __construct($localSocket) {
 
-        $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
-        if(!$this->server) {
+        $this->serverResource = stream_socket_server($localSocket, $errno, $errorMessage);
+        if(!$this->serverResource) {
             throw new Exception\CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }
 
@@ -75,7 +75,7 @@ class Server implements Event\EventEmitterInterface {
      *
      * @var resource
      */
-    protected $server;
+    protected $serverResource;
 
     /**
      * Array of connected Sabre/Net/Socket's.
@@ -174,10 +174,10 @@ class Server implements Event\EventEmitterInterface {
 
         foreach($streams as $stream) {
 
-            if ($stream === $this->server) {
+            if ($stream === $this->serverResource) {
                 // If the server stream is in this list, a new client
                 // connected.
-                $this->connect(stream_socket_accept($this->server));
+                $this->connect(stream_socket_accept($this->serverResource));
                 continue;
             }
 
@@ -203,7 +203,7 @@ class Server implements Event\EventEmitterInterface {
     protected function streamSelect() {
 
         $readStreams = $this->getClientStreams();
-        $readStreams[] = $this->server;
+        $readStreams[] = $this->serverResource;
 
         $writeStreams = null;
         $exceptStreams = null;
