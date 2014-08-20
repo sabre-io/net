@@ -22,7 +22,7 @@ class Server implements Event\EventEmitterInterface {
      */
     function __construct($localSocket) {
 
-        $this->serverResource = stream_socket_server($localSocket, $errno, $errorMessage);
+        $this->serverResource = @stream_socket_server($localSocket, $errno, $errorMessage);
         if(!$this->serverResource) {
             throw new Exception\CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }

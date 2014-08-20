@@ -1,6 +1,6 @@
 <?php
 
-namespace Sabre\Net\Exeption;
+namespace Sabre\Net\Exception;
 
 /**
  * CouldNotBindSocket
