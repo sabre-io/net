@@ -14,8 +14,8 @@ matrix:
 script:
     - phpunit
     - ./vendor/bin/phpcs -p --standard=tests/phpcs/ruleset.xml lib/
-    - mkdir -p build/logs
-    - phpunit --coverage-clover build/logs/clover.xml
+    - mkdir -p tests/logs
+    - phpunit --coverage-clover tests/logs/clover.xml
 
 before_script:
     - composer install --dev
