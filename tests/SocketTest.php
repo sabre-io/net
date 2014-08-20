@@ -21,8 +21,12 @@ class SocketTest extends ServerTest {
 
         foreach($this->connectedClients as $client) {
             $this->assertInstanceOf('Sabre\Net\Socket', $client['Socket']);
-            $this->assertTrue(is_numeric($client['Socket']->getId()));
-            $this->assertTrue(!empty($client['Socket']->getName()));
+
+            $id = $client['Socket']->getId();
+            $this->assertTrue(is_numeric($id));
+
+            $name = $client['Socket']->getName();
+            $this->assertTrue(!empty($name));
         }
 
         fclose($socket);
