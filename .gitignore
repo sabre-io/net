@@ -7,3 +7,4 @@ composer.lock
 
 #development stuff
 tests/cov
+build
