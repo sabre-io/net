@@ -44,7 +44,7 @@ class Socket implements Event\EventEmitterInterface {
      */
     public function __construct($stream) {
 
-        $this->id = (int) $stream;
+        $this->id = (int)$stream;
         $this->name = stream_socket_get_name($stream, true);
         $this->stream = $stream;
 

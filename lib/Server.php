@@ -58,6 +58,7 @@ class Server implements Event\EventEmitterInterface {
      * Starts the server.
      *
      * @return void
+     * @codeCoverageIgnoreStart
      */
     function start() {
 
@@ -67,6 +68,9 @@ class Server implements Event\EventEmitterInterface {
         }
 
     }
+    /**
+     * @codeCoverageIgnoreEnd
+     */
 
     /**
      * Executes a single server tick.
@@ -201,8 +205,8 @@ class Server implements Event\EventEmitterInterface {
         foreach($streams as $stream) {
 
             if ($stream === $this->serverResource) {
-                // If the server stream is in this list, a new client
-                // connected.
+                // If the server stream is in this list,
+                // a new client connected.
                 $this->connect(stream_socket_accept($this->serverResource));
                 continue;
             }
@@ -213,7 +217,6 @@ class Server implements Event\EventEmitterInterface {
             {
                 $this->removeClient($socket);
                 $socket->disconnect();
-
             }
 
         }

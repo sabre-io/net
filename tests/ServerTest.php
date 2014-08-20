@@ -8,11 +8,12 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
 
     protected $server;
 
-    protected $connectedClients = [];
+    protected $connectedClients;
 
     function setUp() {
 
         $this->localSocket = 'tcp://0.0.0.0:'.rand(10000, 65535);
+        $this->connectedClients = [];
         $this->server = new Server($this->localSocket);
 
         $this->server->on('connect', function($socket) {
@@ -81,12 +82,65 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
         $this->server->broadcast('Test');
         $this->server->tick();
 
-
         $this->assertEquals('Test', fread($socket1, 1024));
         $this->assertEquals('Test', fread($socket2, 1024));
 
     }
 
+    /**
+     * @expectedException LogicException
+     */
+    function testClientAddException() {
+
+        $this->assertEquals(0, count($this->connectedClients));
+
+        $socket = stream_socket_client($this->localSocket, $errno, $errstr);
+
+        $add = function($socket) {
+
+            // Ugly! Would be better to know the resource id of the socket before it gets added,
+            // but there's no obvious way to get that before the client is already connected.
+            // (The local ressource id of the client's socket is different from the ressource id of
+            // the socket on the server)
+            $id=1;
+            while($id < 65535) {
+                $this->clients[$id] = new Socket($socket);
+                $id++;
+            }
+
+        };
+        $addClients = $add->bindTo($this->server, 'Sabre\Net\Server');
+        $addClients($socket);
+
+        $this->server->tick();
+
+    }
+
+    /**
+     * @expectedException LogicException
+     */
+    function testClientRemoveException() {
+
+        $this->assertEquals(0, count($this->connectedClients));
+
+        $socket = stream_socket_client($this->localSocket, $errno, $errstr);
+        $this->server->tick();
+
+        $this->assertEquals(1, count($this->connectedClients));
+
+        $remove = function($key, $socket) {
+
+            unset($this->clients[$key]);
+            $this->removeClient($socket);
+
+        };
+        $removeClients = $remove->bindTo($this->server, 'Sabre\Net\Server');
+
+        foreach($this->connectedClients as $key => $client) {
+            $removeClients($key, $client['Socket']);
+        }
+
+    }
 
     function connectListener($socket) {
 
@@ -97,7 +151,6 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
         }
 
         $this->connectedClients[$id]['Socket'] = $socket;
-
 
     }
 
