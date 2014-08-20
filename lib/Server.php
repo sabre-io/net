@@ -2,9 +2,6 @@
 
 namespace Sabre\Net;
 
-use Sabre\Net\Socket;
-use Sabre\Net\Exception\CouldNotBindSocket;
-use Sabre\Net\Exception\StreamSelectFailed;
 use Sabre\Event;
 
 /**
@@ -19,50 +16,15 @@ class Server implements Event\EventEmitterInterface {
     use Event\EventEmitterTrait;
 
     /**
-     * Stream socket server.
-     *
-     * @var resource
-     */
-    protected $server;
-
-    /**
-     * Array of connected Sabre/Net/Socket's.
-     *
-     * @var Socket[]
-     */
-    protected $clients = [];
-
-    /**
-     * Stream socket read streams.
-     *
-     * @var resource[]
-     */
-    protected $readStreams = [];
-
-    /**
-     * Stream socket write streams.
-     *
-     * @var resource[]
-     */
-    protected $writeStreams = [];
-
-    /**
-     * Stream socket timeout.
-     *
-     * @var int
-     */
-    protected $socketTimeout = 200000;
-
-    /**
      * Creates a new server.
      *
      * @param string $localSocket
      */
-    public function __construct($localSocket) {
+    function __construct($localSocket) {
 
-        $this->server = stream_socket_server($localSocket, $errno, $errorMessage);
-        if(!$this->server) {
-            throw new CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
+        $this->serverResource = stream_socket_server($localSocket, $errno, $errorMessage);
+        if(!$this->serverResource) {
+            throw new Exception\CouldNotBindSocket('Could not bind to socket: ' . $errorMessage);
         }
 
     }
@@ -72,11 +34,81 @@ class Server implements Event\EventEmitterInterface {
      *
      * @return array
      */
-    public function getClients() {
+    function getClients() {
 
         return $this->clients;
 
     }
+
+    /**
+     * Sends data to all currently connected clients.
+     *
+     * @param string $data
+     * @return void
+     */
+    function broadcast($data) {
+
+        foreach($this->clients as $socket) {
+            $socket->send($data);
+        }
+
+    }
+
+    /**
+     * Starts the server.
+     *
+     * @return void
+     */
+    function start() {
+
+        while(true) {
+            // Waiting 10 seconds for something to happen.
+            $this->tick(10);
+        }
+
+    }
+
+    /**
+     * Executes a single server tick.
+     *
+     * A tick is when the server waits for data coming from sockets and new
+     * connections, and does all its processing.
+     *
+     * If there is nothing going on, the server can wait for x seconds for
+     * something to happen, using the $timeOut argument. Set that argument to 0
+     * to not wait.
+     *
+     * @return void
+     */
+    function tick($timeOut = 0) {
+
+        $readStreams = $this->getClientStreams();
+        $readStreams[] = $this->serverResource;
+
+        $writeStreams = null;
+        $exceptStreams = null;
+
+        if(!stream_select($readStreams, $writeStreams, $exceptStreams, $timeOut)) {
+            return;
+        }
+
+        $this->processPendingReadStreams($readStreams);
+
+    }
+
+    /**
+     * Stream socket server.
+     *
+     * @var resource
+     */
+    protected $serverResource;
+
+    /**
+     * Array of connected Sabre/Net/Socket's.
+     *
+     * @var Socket[]
+     */
+    protected $clients = [];
 
     /**
      * Returns an array of streams of the connected clients.
@@ -106,8 +138,6 @@ class Server implements Event\EventEmitterInterface {
         $this->addClient($socket);
 
         $this->emit('connect', [$socket]);
-
-        unset($this->readStreams[array_search($this->server, $this->readStreams)]);
 
     }
 
@@ -155,19 +185,27 @@ class Server implements Event\EventEmitterInterface {
      */
     protected function getSocketForStream($stream) {
 
-        $id = (int) $stream;
+        $id = (int)$stream;
         return $this->clients[$id];
 
     }
 
     /**
-     * This method takes care of processing updates in the readStreams array.
+     * This method processes any readable streams that have pending data.
      *
+     * @param resource[] $streams
      * @return void
      */
-    protected function processStreams() {
+    protected function processPendingReadStreams($streams) {
 
-        foreach($this->readStreams as $stream) {
+        foreach($streams as $stream) {
+
+            if ($stream === $this->serverResource) {
+                // If the server stream is in this list, a new client
+                // connected.
+                $this->connect(stream_socket_accept($this->serverResource));
+                continue;
+            }
 
             $socket = $this->getSocketForStream($stream);
 
@@ -178,58 +216,6 @@ class Server implements Event\EventEmitterInterface {
 
             }
 
-        }
-
-    }
-
-    /**
-     * Sends data to all currently connected clients.
-     *
-     * @param  string $data
-     * @return void
-     */
-    public function broadcast($data) {
-
-        foreach($this->clients as $socket) {
-            $socket->send($data);
-        }
-
-    }
-
-    /**
-     * stream_select wrapper.
-     *
-     * @return void
-     */
-    protected function streamSelect() {
-
-        $this->readStreams = $this->getClientStreams();
-        $this->readStreams[] = $this->server;
-
-        $exceptStreams = null;
-        if(!stream_select($this->readStreams, $this->writeStreams, $exceptStreams, $this->socketTimeout))
-        {
-            throw new StreamSelectFailed();
-        }
-
-        if(in_array($this->server, $this->readStreams)) {
-            $this->connect(stream_socket_accept($this->server));
-        }
-
-        $this->processStreams();
-
-    }
-
-    /**
-     * Starts the server.
-     *
-     * @return void
-     */
-    public function start() {
-
-        while(true)
-        {
-            $this->streamSelect();
         }
 
     }
