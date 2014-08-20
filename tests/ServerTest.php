@@ -89,6 +89,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException LogicException
+     * @medium
      */
     function testClientAddException() {
 
@@ -118,6 +119,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException LogicException
+     * @medium
      */
     function testClientRemoveException() {
 
