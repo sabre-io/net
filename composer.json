@@ -6,7 +6,7 @@
         "Server",
         "Socket"
     ],
-    "homepage": "https://github.com/DominikTo/sabre-net",
+    "homepage": "https://github.com/sabre-io/net",
     "license": "BSD-3-Clause",
     "require": {
         "php": ">=5.4.1",
